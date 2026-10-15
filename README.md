@@ -1,6 +1,6 @@
 # Medalicus 2.0 — Coronary Learning Studio
 
-A learning studio for coronary angiography with an interactive model-based virtual angio lab, C-arm orientation practice, teaching scenarios, retrieval cards, and a guided curriculum.
+A medical learning studio with an interactive model-based virtual angio lab, an asset-backed echocardiography viewer, C-arm orientation practice, teaching scenarios, retrieval cards, and a guided curriculum.
 
 ## Principles
 - Original product structure and interaction design; no legacy app components are reused.
@@ -11,6 +11,7 @@ A learning studio for coronary angiography with an interactive model-based virtu
 
 ## Features
 - Virtual Angio Lab with model-based coronary projections, interactive RAO/LAO and cranial/caudal C-arm controls, left/right coronary selection, contrast injection, cine playback, magnification, labels, and view-acquisition practice objectives.
+- Echo Lab that plays only the supplied /public/echo/{plax,psax,a4c,a2c}.mp4 source loops. Missing media produces an explicit error state; no synthetic ultrasound is substituted.
 - Projection Coach with interactive RAO/LAO and cranial/caudal controls and common teaching presets.
 - Text-based case library with search, level filters, saved cases, and learning briefs.
 - Flashcards with answer reveal, navigation, and save-for-review state.

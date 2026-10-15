@@ -1,13 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import VirtualAngioLab from './VirtualAngioLab';
+import EchoLab from './EchoLab';
 import {
   Activity, ArrowRight, ArrowUpRight, Bookmark, BookOpen, Check, CheckCircle2,
   ChevronRight, CircleHelp, Clock3, Compass, Crosshair, Flame, GraduationCap,
   Layers3, MoreHorizontal, RotateCcw, Search, ShieldCheck, SlidersHorizontal,
-  Sparkles, Target, Trophy, X, Zap, Menu
+  Sparkles, Target, Trophy, X, Zap, Menu, Video
 } from 'lucide-react';
 
-type Section = 'Overview' | 'Virtual angio' | 'Projection coach' | 'Case library' | 'Flashcards' | 'Learning path';
+type Section = 'Overview' | 'Echo lab' | 'Virtual angio' | 'Projection coach' | 'Case library' | 'Flashcards' | 'Learning path';
 type Preset = { id: string; name: string; short: string; primary: number; secondary: number; vessel: string; purpose: string; clue: string };
 
 const PRESETS: Preset[] = [
@@ -105,7 +106,7 @@ function ProjectionCoach({ primary, secondary, onAngles, onSection }: { primary:
 function MenuIcon() { return <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>; }
 
 export default function App() {
-  const [section, setSection] = useState<Section>(() => new URLSearchParams(window.location.search).get('view') === 'angio' ? 'Virtual angio' : 'Overview');
+  const [section, setSection] = useState<Section>(() => { const view = new URLSearchParams(window.location.search).get('view'); return view === 'angio' ? 'Virtual angio' : view === 'echo' ? 'Echo lab' : 'Overview'; });
   const [primary, setPrimary] = useState(40);
   const [secondary, setSecondary] = useState(-30);
   const [search, setSearch] = useState('');
@@ -125,7 +126,7 @@ export default function App() {
     const searchMatches = !q || [item.title, item.tag, item.vessel, item.description].some(s => s.toLowerCase().includes(q));
     return searchMatches && (caseFilter === 'All levels' || item.level === caseFilter);
   }), [search, caseFilter]);
-  const navigate = (next: Section) => { setSection(next); const url = new URL(window.location.href); if (next === 'Virtual angio') url.searchParams.set('view', 'angio'); else url.searchParams.delete('view'); window.history.replaceState({}, '', url); setMobileNavOpen(false); setSearch(''); };
+  const navigate = (next: Section) => { setSection(next); const url = new URL(window.location.href); if (next === 'Virtual angio') url.searchParams.set('view', 'angio'); else if (next === 'Echo lab') url.searchParams.set('view', 'echo'); else url.searchParams.delete('view'); window.history.replaceState({}, '', url); setMobileNavOpen(false); setSearch(''); };
   const selectAngles = (p: number, s: number, _id: string) => { setPrimary(p); setSecondary(s); };
   const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(''), 2400); };
   const selectedCaseData = CASES.find(c => c.id === selectedCase);
@@ -135,6 +136,7 @@ export default function App() {
     { label: 'Case library', sub: 'Guided reasoning', icon: <Layers3 size={17} /> },
     { label: 'Flashcards', sub: 'Recall practice', icon: <Target size={17} /> },
     { label: 'Virtual angio', sub: 'C-arm & cine practice', icon: <Crosshair size={17} /> },
+    { label: 'Echo lab', sub: 'Asset-backed TTE loops', icon: <Video size={17} /> },
     { label: 'Learning path', sub: 'Your curriculum', icon: <GraduationCap size={17} /> }
   ];
 
@@ -169,6 +171,8 @@ export default function App() {
         <div className="mt-7 flex items-end justify-between gap-3"><div><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#538176]">Pick up where you left off</div><h2 className="mt-1.5 text-lg font-semibold tracking-tight text-slate-900">Your learning path</h2></div><button onClick={() => navigate('Learning path')} className="text-xs font-semibold text-[#397366] hover:underline">View all</button></div>
         <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">{PATH_ITEMS.map((item,i) => <button key={item.id} onClick={() => navigate(item.section)} className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-left transition hover:border-[#b4d5c8]"><span className={cx('flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold',completed[item.id]?'bg-[#e4f3eb] text-[#26725d]':'bg-slate-100 text-slate-500')}>{completed[item.id]?<Check size={15}/>:String(i+1).padStart(2,'0')}</span><span className="min-w-0"><span className="block text-xs font-semibold leading-5 text-slate-800">{item.title}</span><span className="mt-1 block text-[10px] leading-4 text-slate-500">{item.detail}</span></span></button>)}</div>
       </div></div>}
+
+      {section === 'Echo lab' && <EchoLab />}
 
       {section === 'Virtual angio' && <VirtualAngioLab />}
 
