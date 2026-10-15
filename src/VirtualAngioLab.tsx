@@ -36,6 +36,25 @@ const HEART_OUTLINE: Point3[] = [
   [0.51,0.53,0.26],[0.27,0.74,0.17],[0.08,0.82,0.1],[-0.05,0.88,0.08]
 ];
 
+const RIBS: Point3[][] = Array.from({ length: 7 }, (_, index) => {
+  const y = 0.56 - index * 0.15;
+  const left: Point3[] = [
+    [-0.12, y + 0.13, -0.13], [-0.31, y + 0.17, -0.03],
+    [-0.51, y + 0.10, 0.07], [-0.66, y - 0.01, 0.09], [-0.69, y - 0.09, 0.02]
+  ];
+  return left;
+}).concat(Array.from({ length: 7 }, (_, index) => {
+  const y = 0.56 - index * 0.15;
+  const right: Point3[] = [
+    [0.12, y + 0.13, -0.13], [0.31, y + 0.17, -0.03],
+    [0.51, y + 0.10, 0.07], [0.66, y - 0.01, 0.09], [0.69, y - 0.09, 0.02]
+  ];
+  return right;
+}));
+
+const SPINE: Point3[] = [[0,0.78,-0.18],[0,0.52,-0.18],[0,0.24,-0.18],[0,-0.04,-0.18],[0,-0.32,-0.18],[0,-0.60,-0.18]];
+
+
 const STUDIES = [
   { id: 'left-main', name: 'Left coronary · normal anatomy', mode: 'LCA' as const, target: [40,-30] as [number,number], prompt: 'Acquire a view that opens the left main bifurcation.', clue: 'A caudal LAO projection is commonly taught for separating the LM, LAD and LCx origins.' },
   { id: 'lad-stenosis', name: 'LAD · focal narrowing model', mode: 'LCA' as const, target: [-30,30] as [number,number], prompt: 'Find a complementary view for the LAD and diagonal origins.', clue: 'Cranial angulation may help display the LAD and diagonal branch origins; inspect more than one view.' },
@@ -116,6 +135,8 @@ export default function VirtualAngioLab() {
 
   const visibleVessels = useMemo(() => VESSELS.filter(vessel => vessel.territory === mode || vessel.territory === 'BOTH'), [mode]);
   const projectedHeart = useMemo(() => pathData(HEART_OUTLINE, primary, secondary, zoom), [primary, secondary, zoom]);
+  const projectedRibs = useMemo(() => RIBS.map(points => pathData(points, primary, secondary, zoom)), [primary, secondary, zoom]);
+  const projectedSpine = useMemo(() => pathData(SPINE, primary, secondary, zoom), [primary, secondary, zoom]);
   const projectedVessels = useMemo(() => visibleVessels.map(vessel => ({
     ...vessel,
     d: pathData(vessel.points, primary, secondary, zoom),
@@ -201,23 +222,13 @@ export default function VirtualAngioLab() {
               <rect width="720" height="620" fill="url(#xray-field)"/>
               <rect width="720" height="620" fill="url(#monitor-grid)"/>
               <path d="M28 38h24M40 26v24M668 38h24M680 26v24M28 582h24M40 570v24M668 582h24M680 570v24" stroke="#bdd0c9" strokeOpacity=".32" strokeWidth="1.2" fill="none"/>
-              <g opacity=".14" stroke="#cad2cf" fill="none" strokeWidth="2.2">
-                <path d="M354 42C347 97 348 134 355 176L360 268 358 368 362 475 361 575" strokeWidth="9" strokeOpacity=".1"/>
-                <path d="M285 118C232 91 181 106 142 145C119 169 110 198 130 224C159 245 217 239 281 217"/>
-                <path d="M286 153C226 132 172 155 145 189C132 205 145 228 170 239C204 251 242 238 284 226"/>
-                <path d="M294 193C238 177 191 193 171 225C160 242 179 259 203 267C230 275 261 261 292 249"/>
-                <path d="M306 236C264 225 219 241 208 264C199 283 220 296 240 300C264 304 282 293 300 282"/>
-                <path d="M433 119C487 93 537 106 577 146C601 170 609 199 588 224C559 245 504 239 438 217"/>
-                <path d="M434 153C494 132 547 154 574 189C587 205 574 228 549 239C516 251 477 238 436 226"/>
-                <path d="M428 193C484 177 530 193 550 225C561 242 542 259 518 267C491 275 460 261 430 249"/>
-                <path d="M416 236C458 225 502 241 513 264C522 283 501 296 481 300C457 304 439 293 422 282"/>
+              <g opacity=".13" stroke="#cad2cf" fill="none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                {projectedRibs.map((d, index) => <path key={index} d={d} />)}
               </g>
+              <path d={projectedSpine} fill="none" stroke="#c2ceca" strokeOpacity=".08" strokeWidth="10" strokeLinecap="round" />
               <path d={projectedHeart} fill="url(#heart-haze)" stroke="#c6d3cf" strokeOpacity={showHeart ? '.2' : '0'} strokeWidth="3.8" strokeLinejoin="round" filter="url(#soft-glow)"/>
               <path d={projectedHeart} fill="url(#heart-haze)" stroke="#b5c5bf" strokeOpacity={showHeart ? '.11' : '0'} strokeWidth="1.4" strokeLinejoin="round"/>
-              <g opacity=".12" stroke="#d3dad7" fill="none" strokeWidth="1">
-                <path d="M360 55C352 113 371 147 355 198S351 264 363 314S355 382 365 434"/>
-                <path d="M335 188C312 207 305 242 319 260M388 179C406 208 406 241 392 263"/>
-              </g>
+
               {projectedVessels.map(vessel => {
                 const narrowed = studyId === 'lad-stenosis' && vessel.id === 'lad-mid';
                 const strokeWidth = narrowed ? vessel.width * 0.57 : vessel.width;
@@ -246,7 +257,7 @@ export default function VirtualAngioLab() {
                 <button onClick={inject} className="inline-flex items-center gap-2 rounded-xl bg-[#d8f0e5] px-4 py-2.5 text-xs font-bold text-[#143b35] hover:bg-white"><Syringe size={15}/> Inject contrast</button>
                 <button onClick={() => { setContrast(true); setCine(value => !value); }} className={cine ? 'inline-flex items-center gap-2 rounded-xl border border-[#71b49d] bg-[#1b4840] px-3 py-2.5 text-xs font-semibold text-[#c6efdf]' : 'inline-flex items-center gap-2 rounded-xl border border-white/15 px-3 py-2.5 text-xs font-semibold text-slate-200 hover:bg-white/5'}>{cine ? <Pause size={14}/> : <Play size={14}/>} {cine ? 'Pause cine' : 'Play cine'}</button>
               </div>
-              <div className="flex items-center gap-3 text-[10px] text-[#98aaa3]"><span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-[#a4e4ce]"/>Model lumen</span><span>15 fps teaching loop</span></div>
+              <div className="flex items-center gap-3 text-[10px] text-[#98aaa3]"><span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-[#a4e4ce]"/>Model lumen</span><span>Model-based cine loop</span></div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-px border-t border-white/10 bg-white/10 sm:grid-cols-4">

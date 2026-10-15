@@ -105,7 +105,7 @@ function ProjectionCoach({ primary, secondary, onAngles, onSection }: { primary:
 function MenuIcon() { return <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>; }
 
 export default function App() {
-  const [section, setSection] = useState<Section>('Overview');
+  const [section, setSection] = useState<Section>(() => new URLSearchParams(window.location.search).get('view') === 'angio' ? 'Virtual angio' : 'Overview');
   const [primary, setPrimary] = useState(40);
   const [secondary, setSecondary] = useState(-30);
   const [search, setSearch] = useState('');
@@ -125,7 +125,7 @@ export default function App() {
     const searchMatches = !q || [item.title, item.tag, item.vessel, item.description].some(s => s.toLowerCase().includes(q));
     return searchMatches && (caseFilter === 'All levels' || item.level === caseFilter);
   }), [search, caseFilter]);
-  const navigate = (next: Section) => { setSection(next); setMobileNavOpen(false); setSearch(''); };
+  const navigate = (next: Section) => { setSection(next); const url = new URL(window.location.href); if (next === 'Virtual angio') url.searchParams.set('view', 'angio'); else url.searchParams.delete('view'); window.history.replaceState({}, '', url); setMobileNavOpen(false); setSearch(''); };
   const selectAngles = (p: number, s: number, _id: string) => { setPrimary(p); setSecondary(s); };
   const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(''), 2400); };
   const selectedCaseData = CASES.find(c => c.id === selectedCase);
