@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import VirtualAngioLab from './VirtualAngioLab';
 import {
   Activity, ArrowRight, ArrowUpRight, Bookmark, BookOpen, Check, CheckCircle2,
   ChevronRight, CircleHelp, Clock3, Compass, Crosshair, Flame, GraduationCap,
@@ -6,7 +7,7 @@ import {
   Sparkles, Target, Trophy, X, Zap, Menu
 } from 'lucide-react';
 
-type Section = 'Overview' | 'Projection coach' | 'Case library' | 'Flashcards' | 'Learning path';
+type Section = 'Overview' | 'Virtual angio' | 'Projection coach' | 'Case library' | 'Flashcards' | 'Learning path';
 type Preset = { id: string; name: string; short: string; primary: number; secondary: number; vessel: string; purpose: string; clue: string };
 
 const PRESETS: Preset[] = [
@@ -133,6 +134,7 @@ export default function App() {
     { label: 'Projection coach', sub: 'Angles & orientation', icon: <Compass size={17} /> },
     { label: 'Case library', sub: 'Guided reasoning', icon: <Layers3 size={17} /> },
     { label: 'Flashcards', sub: 'Recall practice', icon: <Target size={17} /> },
+    { label: 'Virtual angio', sub: 'C-arm & cine practice', icon: <Crosshair size={17} /> },
     { label: 'Learning path', sub: 'Your curriculum', icon: <GraduationCap size={17} /> }
   ];
 
@@ -167,6 +169,8 @@ export default function App() {
         <div className="mt-7 flex items-end justify-between gap-3"><div><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#538176]">Pick up where you left off</div><h2 className="mt-1.5 text-lg font-semibold tracking-tight text-slate-900">Your learning path</h2></div><button onClick={() => navigate('Learning path')} className="text-xs font-semibold text-[#397366] hover:underline">View all</button></div>
         <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">{PATH_ITEMS.map((item,i) => <button key={item.id} onClick={() => navigate(item.section)} className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-left transition hover:border-[#b4d5c8]"><span className={cx('flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold',completed[item.id]?'bg-[#e4f3eb] text-[#26725d]':'bg-slate-100 text-slate-500')}>{completed[item.id]?<Check size={15}/>:String(i+1).padStart(2,'0')}</span><span className="min-w-0"><span className="block text-xs font-semibold leading-5 text-slate-800">{item.title}</span><span className="mt-1 block text-[10px] leading-4 text-slate-500">{item.detail}</span></span></button>)}</div>
       </div></div>}
+
+      {section === 'Virtual angio' && <VirtualAngioLab />}
 
       {section === 'Projection coach' && <ProjectionCoach primary={primary} secondary={secondary} onAngles={selectAngles} onSection={navigate} />}
 
